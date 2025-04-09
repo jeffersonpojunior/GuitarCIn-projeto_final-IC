@@ -1,4 +1,8 @@
 #include <Arduino.h>
+#include <U8g2lib.h>
+#include <SPI.h>
+
+U8G2_UC1701_MINI12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 
 #define red 3
 #define blue 4
@@ -35,7 +39,6 @@ void run_GuitarCIn(float &game_time, bool &game_over){
     reaction = 6;
   }
   else{
-    Serial.println("GAME OVER");
     reaction = 0;
     game_over = true; // Parando a execução do código
   }
@@ -70,6 +73,7 @@ void run_GuitarCIn(float &game_time, bool &game_over){
 
 void setup() {
   // put your setup code here, to run once:
+  u8g2.begin();
   Serial.begin(9600);
   pinMode(button, INPUT_PULLUP);
   pinMode(buzzer, OUTPUT);

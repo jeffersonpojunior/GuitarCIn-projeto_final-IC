@@ -35,17 +35,16 @@ void run_GuitarCIn(float &game_time, bool &game_over){
     reaction = 6;
   }
   else{
-    Serial.println("Nota ERRADA");
     Serial.println("GAME OVER");
+    reaction = 0;
     game_over = true; // Parando a execução do código
   }
   
   // Julgando a resposta do jogador:
   if(reaction != num){
-    Serial.println("Nota ERRADA");
     Serial.println("GAME OVER");
+    tone(buzzer, 100, 100); // Tocar aqui uma nota errada
     game_over = true; // Parando a execução do código
-  
   }
   else{
     // Caso a resposta do jogador tenha sido acertiva, iremos tocar a nota correspondente:
@@ -63,8 +62,8 @@ void run_GuitarCIn(float &game_time, bool &game_over){
     }
   }
 
-  if(game_time > 100){
-    game_time -= 100;
+  if(game_time > 500){
+    game_time -= 80;
   }
 }
 
@@ -87,13 +86,14 @@ void loop() {
   run_GuitarCIn(game_time, game_over);
 
   if(game_over){
-    Serial.println("Aperte o botão para iniciar o GuitarCIn");
+    Serial.println("Bem vindo ao GuitarCIn!\n");
+    Serial.println("Aperte o botão para começar o jogo!");
     int decisao = digitalRead(button);
-    while(decisao != HIGH){
-        decisao = digitalRead(button); // Waiting the user start the game
+    while(decisao != LOW){
+        decisao = digitalRead(button); // Esperando o jogador iniciar o jogo
         delay(100); //debounce
     }
-    game_over = false; // the game was started again
+    game_over = false; // O jogo foi recomeçado
     game_time = 2000;
   }
 }

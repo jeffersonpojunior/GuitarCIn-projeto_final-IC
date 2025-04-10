@@ -43,7 +43,7 @@ void run_GuitarCIn(float &game_time, bool &game_over){
     }
     u8g2.sendBuffer();
     y++; // movendo as notas para baixo
-    delay(game_time); // ajusta a velocidade do movimento
+    delay(10); // velocidade do movimento
   }
 
   // Analisando a resposta do jogador:
@@ -112,7 +112,6 @@ void setup() {
   pinMode(blue, INPUT);
   pinMode(green, INPUT);
   pinMode(yellow, INPUT);
-  Serial.begin(9600);
 }
 
 
@@ -126,7 +125,7 @@ void loop() {
     u8g2.drawStr(30, 32, "Sua pontuação foi de: ");
     char pontuacao_str[10];
     itoa(pontuacao, pontuacao_str, 10); // converte inteiro para string
-    u8g2.drawStr(30, 32, pontuacao_str);
+    u8g2.drawStr(30, 33, pontuacao_str);
     u8g2.sendBuffer();
 
     // Checando se o recorde foi batido:
@@ -134,7 +133,7 @@ void loop() {
       u8g2.drawStr(30, 32, "Parabéns!! Você acabou de bater o recorde que era de ");
       char recorde_str[10];
       itoa(recorde, recorde_str, 10); // converte inteiro para string
-      u8g2.drawStr(30, 32, recorde_str);
+      u8g2.drawStr(30, 33, recorde_str);
       u8g2.sendBuffer();
       recorde = pontuacao;
     }

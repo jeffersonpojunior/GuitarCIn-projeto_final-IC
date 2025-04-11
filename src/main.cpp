@@ -1,9 +1,9 @@
 #include <Arduino.h>
-#include <U8g2lib.h>
-#include <SPI.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
-// Criando o objeto u8g2 que é o sensor:
-U8G2_UC1701_MINI12864_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 12, /* rs=*/ 10, /* reset=*/ 9);
+// Criando o objeto lcd que é o visor:
+LiquidCrystal_I2C lcd(0x20, 16, 2); // Endereço e tamanho do LCD
 
 #define red 3
 #define blue 4
@@ -24,27 +24,34 @@ int recorde = 0;
 void run_GuitarCIn(float &game_time, bool &game_over){
   int num = random(3, 7); // Gera um número aleatório, cada qual atrelado a uma nota: 3 - vermelho, 4 - azul, 5 - verde, 6 - amarelo
 
-  // Exibindo os movimentos da notas(círculos) no visor
-  Serial.println(num);
-  int x_positions[4] = {16, 46, 76, 106}; // Espaçamento dos círculos
-  int y = 0;
-
-  unsigned long start_time = millis(); // Variável do tipo unsigned long pois millis() conta o tempo desde que o arduino foi ligado em millisegundos, se tornando assim um número muito grande.
-  while (millis() - start_time < game_time) {
-    u8g2.clearBuffer();
-    for (int i = 3; i < 7; i++){
-      if (i == num){
-        // Desenha um círculo preenchido, que é a nota a ser precionada
-        u8g2.drawDisc(x_positions[i - 3], y, 6);
-      } 
-      else{
-        u8g2.drawCircle(x_positions[i - 3], y, 6); // Desenha um círculo normal
-      }
+  // Exibindo os movimentos da notas(números) no monitor serial
+  for(int i = 0;i < 4; i++){
+    if(i == num - 3){
+      Serial.print("1");
     }
-    u8g2.sendBuffer();
-    y++; // movendo as notas para baixo
-    delay(10); // velocidade do movimento
+    else{
+      Serial.print("0");
+    }
+    Serial.print("  ");
   }
+  Serial.println("");
+
+  // Printando as notas no visor: -----------------------------------------------------------------------
+  lcd.clear();
+  for(int i = 0; i < 4; i++){
+    if(i == num - 3){
+      lcd.setCursor(i, 0);
+      lcd.write(byte(1)); // Nota correta
+      lcd.write(' ');
+    }
+    else{
+      lcd.setCursor(i, 0);
+      lcd.write(byte(0)); // Nota errada
+      lcd.write(' ');
+    }
+  }
+  delay(game_time);
+  // ---------------------------------------------------
 
   // Analisando a resposta do jogador:
   int reaction;
@@ -68,14 +75,11 @@ void run_GuitarCIn(float &game_time, bool &game_over){
   // Julgando a resposta do jogador:
   if(reaction != num){
     Serial.println("GAME OVER");
-    tone(buzzer, 100, 100); // Tocar aqui uma nota errada
+    tone(buzzer, 100, 100); // Nota para simbolizar o GAME OVER
 
     // Mostrando "GAME OVER" no visor por 2 segundos:
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(30, 32, "GAME OVER");
-    u8g2.sendBuffer();
-
+    lcd.clear();
+    lcd.print("GAME OVER");
     delay(2000);
     game_over = true; // Parando a execução do código
   }
@@ -96,15 +100,20 @@ void run_GuitarCIn(float &game_time, bool &game_over){
     pontuacao += 1;
   }
 
-  if(game_time > 800){
+  if(game_time > 900){
     game_time -= 80;
+  }
+  else if(900 <= game_time < 600){ // O jogo demora mais para acelerar quando chega nesse estágio, para evitar que chegue na velocidade máxima rápido demais.
+    game_time -= 40;
   }
 }
 
 
 void setup() {
   // put your setup code here, to run once:
-  u8g2.begin();
+  lcd.begin(16, 2);
+  lcd.init();
+  lcd.backlight();
   Serial.begin(9600);
   pinMode(button, INPUT_PULLUP);
   pinMode(buzzer, OUTPUT);
@@ -120,30 +129,32 @@ void loop() {
   run_GuitarCIn(game_time, game_over);
 
   if(game_over){
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(30, 32, "Sua pontuação foi de: ");
-    char pontuacao_str[10];
-    itoa(pontuacao, pontuacao_str, 10); // converte inteiro para string
-    u8g2.drawStr(30, 33, pontuacao_str);
-    u8g2.sendBuffer();
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Sua pontuação foi de ");
+    lcd.setCursor(6,0);
+    lcd.print(pontuacao);
+    Serial.print("Sua pontuação foi de: ");
+    Serial.println(pontuacao);
 
     // Checando se o recorde foi batido:
     if(pontuacao > recorde){
-      u8g2.drawStr(30, 32, "Parabéns!! Você acabou de bater o recorde que era de ");
-      char recorde_str[10];
-      itoa(recorde, recorde_str, 10); // converte inteiro para string
-      u8g2.drawStr(30, 33, recorde_str);
-      u8g2.sendBuffer();
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Parabéns!! Você acabou de bater o recorde que era de ");
+      lcd.setCursor(8,0);
+      lcd.print(recorde);
+      Serial.print("Parabéns!! Você acabou de bater o recorde que era de ");
+      Serial.println(recorde);
       recorde = pontuacao;
     }
 
     // Recomeçando o jogo:
     pontuacao = 0;
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(30, 32, "Bem vindo ao GuitarCIn! Pressione o botão para começar");
-    u8g2.sendBuffer();
+    Serial.println("Bem vindo ao GuitarCIn! Pressione o botão para começar");
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Bem vindo ao GuitarCIn! Pressione o botão para começar");
     int decisao = digitalRead(button);
     while(decisao != LOW){
         decisao = digitalRead(button); // Esperando o jogador iniciar o jogo

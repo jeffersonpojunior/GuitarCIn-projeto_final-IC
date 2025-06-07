@@ -1,1 +1,1 @@
-# Projeto GuitarCIn desenvolvido por Jefferson Pereira de Oliveira Júnior e Luiz Felipe Pinto Ávila de Barros para o projeto da cadeira de Introdução à Computação ministrada pelo professor Adriano Lorena. Inspirado no famoso jogo Guitar Hero.
+# Projeto GuitarCIn desenvolvido por Jefferson Pereira de Oliveira Júnior e Luiz Felipe Pinto Ávila de Barros para o projeto da cadeira de Introdução à Computação, ministrada pelo professor Adriano Lorena. Inspirado no famoso jogo Guitar Hero.
